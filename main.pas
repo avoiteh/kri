@@ -28,6 +28,7 @@ type
     procedure N5Click(Sender: TObject);
     procedure N6Click(Sender: TObject);
     procedure N3Click(Sender: TObject);
+    procedure N4Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -103,11 +104,15 @@ begin
 len:=Length(scriptTab);
 scriptSynEd[number].Free;
 scriptTab[number].Free;
+Application.ProcessMessages;
+
 for i:=number+1 to len-1 do
 begin
   scriptSynEd[i-1]:=scriptSynEd[i];
   scriptTab[i-1]:=scriptTab[i];
 end;
+SetLength(scriptSynEd, len-1);
+SetLength(scriptTab, len-1);
 end;
 
 procedure TFormMain.N5Click(Sender: TObject);
@@ -131,7 +136,28 @@ if DirectoryExists(Path) then
   ShowMessage('Каталог "'+Path+'" уже есть!')
 else
   MkDir(Path);
-ShellTreeViewScripts.Refresh(ShellTreeViewScripts.Items[0]);
+ShellTreeViewScripts.Refresh(ShellTreeViewScripts.Selected);
+end;
+
+procedure TFormMain.N4Click(Sender: TObject);
+var
+  Path:string;
+  tf:TextFile;
+begin
+Path:=ShellTreeViewScripts.Path + '\'+ InputBox('Создать новый файл', 'Введите название:', '.php');
+if FileExists(Path) then
+  ShowMessage('Файл "'+Path+'" уже есть!')
+else
+begin
+  AssignFile(tf,Path);
+  Rewrite(tf);
+  writeln(tf,'<?php');
+  writeln(tf,'//'+TimeToStr(Time));
+  writeln(tf,'?>');
+  CloseFile(tf);
+  addScriptTab(Path);
+end;
+ShellTreeViewScripts.Refresh(ShellTreeViewScripts.Selected);
 end;
 
 end.

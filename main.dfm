@@ -83,6 +83,7 @@ object FormMain: TFormMain
       end
       object N4: TMenuItem
         Caption = #1060#1072#1081#1083
+        OnClick = N4Click
       end
     end
     object N2: TMenuItem
