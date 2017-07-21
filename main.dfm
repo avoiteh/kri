@@ -39,7 +39,7 @@ object FormMain: TFormMain
         Root = 'rfDesktop'
         UseShellImages = True
         Align = alLeft
-        AutoRefresh = False
+        AutoRefresh = True
         Indent = 19
         ParentColor = False
         PopupMenu = PopupMenuTreeScripts
@@ -64,10 +64,12 @@ object FormMain: TFormMain
     Top = 64
     object N5: TMenuItem
       Caption = #1047#1072#1082#1088#1099#1090#1100
+      OnClick = N5Click
     end
     object N6: TMenuItem
       Caption = #1057#1086#1093#1088#1072#1085#1080#1090#1100
       ShortCut = 16467
+      OnClick = N6Click
     end
   end
   object PopupMenuTreeScripts: TPopupMenu
