@@ -4,10 +4,12 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs;
+  Dialogs, ComCtrls;
 
 type
   TFormMain = class(TForm)
+    PageControl: TPageControl;
+    TabSheetScripts: TTabSheet;
   private
     { Private declarations }
   public
