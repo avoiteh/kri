@@ -27,6 +27,7 @@ type
     procedure ShellTreeViewScriptsDblClick(Sender: TObject);
     procedure N5Click(Sender: TObject);
     procedure N6Click(Sender: TObject);
+    procedure N3Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -49,7 +50,7 @@ procedure TFormMain.FormActivate(Sender: TObject);
 begin
 RootDir:= ExtractFilePath(ParamStr(0));
 ShellTreeViewScripts.Root:=RootDir+'script';
-ShellTreeViewScripts.Refresh();
+//ShellTreeViewScripts.Refresh(ShellTreeViewScripts.Selected.Parent);
 end;
 
 procedure TFormMain.ShellTreeViewScriptsDblClick(Sender: TObject);
@@ -88,6 +89,10 @@ scriptSynEd[len]:=TSynEdit.Create(self);
 scriptSynEd[len].Parent:=scriptTab[len];
 scriptSynEd[len].Align:=alClient;
 scriptSynEd[len].Lines.LoadFromFile(filename);
+scriptSynEd[len].Highlighter:=SynPHPSyn1;
+scriptSynEd[len].Gutter.ShowLineNumbers:=true;
+scriptSynEd[len].WordWrap:=true;
+
 scriptSynEd[len].SetFocus;
 end;
 
@@ -115,6 +120,18 @@ var i:integer;
 begin
 i:=PageControlScripts.ActivePageIndex;
 scriptSynEd[i].Lines.SaveToFile(scriptTab[i].Caption);
+end;
+
+procedure TFormMain.N3Click(Sender: TObject);
+var
+  Path:string;
+begin
+Path:=ShellTreeViewScripts.Path + '\'+ InputBox('Создать новый каталог', 'Введите название:', 'Новый каталог');
+if DirectoryExists(Path) then
+  ShowMessage('Каталог "'+Path+'" уже есть!')
+else
+  MkDir(Path);
+ShellTreeViewScripts.Refresh(ShellTreeViewScripts.Items[0]);
 end;
 
 end.

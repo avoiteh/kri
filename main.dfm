@@ -35,11 +35,11 @@ object FormMain: TFormMain
         Top = 0
         Width = 225
         Height = 581
-        ObjectTypes = [otFolders]
+        ObjectTypes = [otFolders, otNonFolders]
         Root = 'rfDesktop'
         UseShellImages = True
         Align = alLeft
-        AutoRefresh = True
+        AutoRefresh = False
         Indent = 19
         ParentColor = False
         PopupMenu = PopupMenuTreeScripts
@@ -79,6 +79,7 @@ object FormMain: TFormMain
       Caption = #1057#1086#1079#1076#1072#1090#1100
       object N3: TMenuItem
         Caption = #1050#1072#1090#1072#1083#1086#1075
+        OnClick = N3Click
       end
       object N4: TMenuItem
         Caption = #1060#1072#1081#1083
