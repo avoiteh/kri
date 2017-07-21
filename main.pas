@@ -29,6 +29,7 @@ type
     procedure N6Click(Sender: TObject);
     procedure N3Click(Sender: TObject);
     procedure N4Click(Sender: TObject);
+    procedure N2Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -38,6 +39,7 @@ type
     { Public declarations }
     function  addScriptTab(filename:string):integer;
     procedure closeScriptTab(number:integer);
+    function  DeleteDir(Dir: string): boolean;
   end;
 
 var
@@ -158,6 +160,50 @@ begin
   addScriptTab(Path);
 end;
 ShellTreeViewScripts.Refresh(ShellTreeViewScripts.Selected);
+end;
+
+function TFormMain.DeleteDir(Dir: string): boolean;
+var
+Found: integer;
+SearchRec: TSearchRec;
+begin
+result := false;
+if IOResult <> 0 then
+ ChDir(Dir);
+if IOResult <> 0 then
+begin
+ ShowMessage('?? ???? ????? ? ???????: ' + Dir);
+ exit;
+end;
+Found := FindFirst('*.*', faAnyFile, SearchRec);
+while Found = 0 do
+begin
+ if (SearchRec.name <> '.') and (SearchRec.name <> '..') then
+  if (SearchRec.Attr and faDirectory) <> 0 then
+  begin
+   if not DeleteDir(SearchRec.name) then
+    exit;
+   end
+   else
+    if not DeleteFile(SearchRec.name) then
+    begin
+     ShowMessage('?? ???? ??????? ????: ' + SearchRec.name);
+     exit;
+    end;
+   Found := FindNext(SearchRec);
+  end;
+FindClose(SearchRec);
+ChDir('..');
+RmDir(Dir);
+result := IOResult = 0;
+end;
+procedure TFormMain.N2Click(Sender: TObject);
+begin
+if MessageDlg('Удалить "'+ShellTreeViewScripts.Path+'"?', mtConfirmation, mbYesNoCancel, 0) = idYes then
+  if DirectoryExists(ShellTreeViewScripts.Path) then
+    DeleteDir(ShellTreeViewScripts.Path)
+  else if FileExists(ShellTreeViewScripts.Path) then
+    DeleteFile(ShellTreeViewScripts.Path);
 end;
 
 end.

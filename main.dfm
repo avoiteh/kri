@@ -88,6 +88,7 @@ object FormMain: TFormMain
     end
     object N2: TMenuItem
       Caption = #1059#1076#1072#1083#1080#1090#1100
+      OnClick = N2Click
     end
   end
   object SynPHPSyn1: TSynPHPSyn
