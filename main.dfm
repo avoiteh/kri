@@ -58,6 +58,59 @@ object FormMain: TFormMain
         TabOrder = 1
       end
     end
+    object TabSheetRun: TTabSheet
+      Caption = #1052#1086#1085#1080#1090#1086#1088
+      ImageIndex = 1
+      object Splitter2: TSplitter
+        Left = 217
+        Top = 0
+        Width = 8
+        Height = 581
+      end
+      object ValueListEditorScripts: TValueListEditor
+        Left = 0
+        Top = 0
+        Width = 217
+        Height = 581
+        Align = alLeft
+        TabOrder = 0
+        ColWidths = (
+          150
+          61)
+      end
+      object WebBrowserRun: TWebBrowser
+        Left = 225
+        Top = 0
+        Width = 629
+        Height = 581
+        Align = alClient
+        TabOrder = 1
+        ControlData = {
+          4C000000024100000C3C00000000000000000000000000000000000000000000
+          000000004C000000000000000000000001000000E0D057007335CF11AE690800
+          2B2E126208000000000000004C0000000114020000000000C000000000000046
+          8000000000000000000000000000000000000000000000000000000000000000
+          00000000000000000100000000000000000000000000000000000000}
+      end
+    end
+    object TabSheetReports: TTabSheet
+      Caption = #1054#1090#1095#1105#1090
+      ImageIndex = 2
+      object WebBrowserReport: TWebBrowser
+        Left = 0
+        Top = 0
+        Width = 854
+        Height = 581
+        Align = alClient
+        TabOrder = 0
+        ControlData = {
+          4C000000435800000C3C00000000000000000000000000000000000000000000
+          000000004C000000000000000000000001000000E0D057007335CF11AE690800
+          2B2E126208000000000000004C0000000114020000000000C000000000000046
+          8000000000000000000000000000000000000000000000000000000000000000
+          00000000000000000100000000000000000000000000000000000000}
+      end
+    end
   end
   object PopupMenuTabsScript: TPopupMenu
     Left = 276

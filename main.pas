@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, Menus, ExtCtrls, ShellCtrls, SynEditHighlighter,
-  SynHighlighterPHP, SynEdit;
+  SynHighlighterPHP, SynEdit, OleCtrls, SHDocVw, Grids, ValEdit;
 
 type
   TFormMain = class(TForm)
@@ -23,6 +23,12 @@ type
     N5: TMenuItem;
     N6: TMenuItem;
     SynPHPSyn1: TSynPHPSyn;
+    TabSheetRun: TTabSheet;
+    TabSheetReports: TTabSheet;
+    ValueListEditorScripts: TValueListEditor;
+    Splitter2: TSplitter;
+    WebBrowserRun: TWebBrowser;
+    WebBrowserReport: TWebBrowser;
     procedure FormActivate(Sender: TObject);
     procedure ShellTreeViewScriptsDblClick(Sender: TObject);
     procedure N5Click(Sender: TObject);
@@ -168,7 +174,7 @@ Found: integer;
 SearchRec: TSearchRec;
 begin
 result := false;
-if IOResult <> 0 then
+//if IOResult <> 0 then
  ChDir(Dir);
 if IOResult <> 0 then
 begin
@@ -204,6 +210,7 @@ if MessageDlg('Удалить "'+ShellTreeViewScripts.Path+'"?', mtConfirmation, mbYesN
     DeleteDir(ShellTreeViewScripts.Path)
   else if FileExists(ShellTreeViewScripts.Path) then
     DeleteFile(ShellTreeViewScripts.Path);
+ShellTreeViewScripts.Refresh(ShellTreeViewScripts.Selected.Parent);
 end;
 
 end.
