@@ -46,6 +46,7 @@ type
     function  addScriptTab(filename:string):integer;
     procedure closeScriptTab(number:integer);
     function  DeleteDir(Dir: string): boolean;
+
   end;
 
 var

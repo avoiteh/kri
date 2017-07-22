@@ -2,7 +2,8 @@ program kri;
 
 uses
   Forms,
-  main in 'main.pas' {FormMain};
+  main in 'main.pas' {FormMain},
+  phpscript in 'phpscript.pas';
 
 {$R *.res}
 
