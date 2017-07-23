@@ -23,7 +23,8 @@ type
 
 implementation
 
-uses SysUtils;
+uses
+  SysUtils,Windows;
 
 constructor TPHPscript.Create(_filename, _baseDir:string);
 var
@@ -84,9 +85,7 @@ writeln(tf, inputData);
 writeln(tf,'?>');
 CloseFile(tf);
 
-CopyFile(path+filename, baseDir+'php/tmp/'+filename, true);
-
-RunAppAndWait('php.exe ');
+CopyFile(PChar(path+filename), PChar(baseDir+'php/tmp/'+filename), true);
 end;
 
 

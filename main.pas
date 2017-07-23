@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, Menus, ExtCtrls, ShellCtrls, SynEditHighlighter,
-  SynHighlighterPHP, SynEdit, OleCtrls, SHDocVw, Grids, ValEdit;
+  SynHighlighterPHP, SynEdit, OleCtrls, SHDocVw, Grids, ValEdit,
+  PHPCustomLibrary, phpLibrary, PHPCommon, php4delphi, phpFunctions, MSHTML;
 
 type
   TFormMain = class(TForm)
@@ -29,6 +30,11 @@ type
     Splitter2: TSplitter;
     WebBrowserRun: TWebBrowser;
     WebBrowserReport: TWebBrowser;
+    psvPHP1: TpsvPHP;
+    PHPLibrary1: TPHPLibrary;
+    Run1: TMenuItem;
+    PHPEngine1: TPHPEngine;
+    PHPSystemLibrary1: TPHPSystemLibrary;
     procedure FormActivate(Sender: TObject);
     procedure ShellTreeViewScriptsDblClick(Sender: TObject);
     procedure N5Click(Sender: TObject);
@@ -36,6 +42,10 @@ type
     procedure N3Click(Sender: TObject);
     procedure N4Click(Sender: TObject);
     procedure N2Click(Sender: TObject);
+    procedure PHPLibrary1Functions0Execute(Sender: TObject;
+      Parameters: TFunctionParams; var ReturnValue: Variant;
+      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    procedure Run1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -46,7 +56,7 @@ type
     function  addScriptTab(filename:string):integer;
     procedure closeScriptTab(number:integer);
     function  DeleteDir(Dir: string): boolean;
-
+    function  LoadPage(action:string):boolean;
   end;
 
 var
@@ -61,6 +71,9 @@ begin
 RootDir:= ExtractFilePath(ParamStr(0));
 ShellTreeViewScripts.Root:=RootDir+'script';
 //ShellTreeViewScripts.Refresh(ShellTreeViewScripts.Selected.Parent);
+//PHPEngine1.DLLFolder:=RootDir;//+'PHP\extention\';
+//PHPEngine1.IniPath:=RootDir;//+'PHP\';
+PHPEngine.StartupEngine;
 end;
 
 procedure TFormMain.ShellTreeViewScriptsDblClick(Sender: TObject);
@@ -153,7 +166,10 @@ var
   Path:string;
   tf:TextFile;
 begin
-Path:=ShellTreeViewScripts.Path + '\'+ InputBox('Создать новый файл', 'Введите название:', '.php');
+Path:=ShellTreeViewScripts.Path;
+if not DirectoryExists(Path) then
+  Path:=ExtractFileDir(Path);
+Path:=Path + '\'+ InputBox('Создать новый файл', 'Введите название:', '.php');
 if FileExists(Path) then
   ShowMessage('Файл "'+Path+'" уже есть!')
 else
@@ -204,6 +220,7 @@ ChDir('..');
 RmDir(Dir);
 result := IOResult = 0;
 end;
+
 procedure TFormMain.N2Click(Sender: TObject);
 begin
 if MessageDlg('Удалить "'+ShellTreeViewScripts.Path+'"?', mtConfirmation, mbYesNoCancel, 0) = idYes then
@@ -213,5 +230,152 @@ if MessageDlg('Удалить "'+ShellTreeViewScripts.Path+'"?', mtConfirmation, mbYesN
     DeleteFile(ShellTreeViewScripts.Path);
 ShellTreeViewScripts.Refresh(ShellTreeViewScripts.Selected.Parent);
 end;
+
+procedure TFormMain.PHPLibrary1Functions0Execute(Sender: TObject;
+  Parameters: TFunctionParams; var ReturnValue: Variant;
+  ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+var
+  s:string;
+begin
+PageControl.ActivePageIndex:=0;
+Application.ProcessMessages;
+s:=Parameters[0].Value;
+
+end;
+
+procedure TFormMain.Run1Click(Sender: TObject);
+var
+  s:string;
+  Document: IHtmlDocument2;
+begin
+s:=psvPHP1.Execute(scriptTab[PageControlScripts.ActivePageIndex].Caption);
+PageControl.ActivePageIndex:=1;
+Application.ProcessMessages;
+WebBrowserRun.Navigate('about:'+s);
+//ShowMessage(s);
+end;
+
+function  TFormMain.LoadPage(action:string):boolean;
+var
+  tmpdoc: IHTMLDocument2;
+  s, test_URL:string;
+  k,p1,ng,p0:integer;
+  fl,goodload, ress:boolean;
+  tt, oneSec:real;
+begin
+WebLoad:=true;
+goodload:=false;
+ng:=1;
+GloLoadingFlag:=false;
+if PageControlWebs.Pages[0]<>nil then
+  PageControlWebs.Pages[0].Caption:=action;
+Application.ProcessMessages;
+oneSec:=1/24/60/60;
+//начинаем грузить страницу
+while (not goodload) and WebLoad do
+begin
+   //MessageBox(0,PChar(action),'',MB_OK);
+   GloLoadingFlag:=true;
+   WebBrowser.Silent:=true;
+   WebBrowser.Navigate(action);
+   fl:=true;
+   //таймер задержки
+   tt:=Time;
+   k:=0;
+   if myProject.EnableYandex then k:=k+1;
+   if myProject.EnableRambler then k:=k+1;
+   if myProject.EnableGoogle then k:=k+1;
+   if k=0 then k:=1;
+   Application.ProcessMessages;
+   while (tt+myProject.TimeOut/k*oneSec>Time) and WebLoad do
+   begin
+     Sleep(100);
+     Application.ProcessMessages;
+   end;
+   //предельное время ожидания загрузки страницы - 30 секунд
+   //если за это время не удалось произвести загрузку, то прерываем процесс
+   Cursor:=crHourGlass;
+   while WebBrowser.Busy and (tt+30*oneSec>Time) and WebLoad do
+     Application.ProcessMessages;
+   Cursor:=crDefault;
+
+   tmpdoc:=IHTMLDocument2(WebBrowser.Document);
+
+   while fl and WebLoad do
+   begin
+     try
+       s:=AnsiUpperCase(tmpdoc.body.outerHTML);
+       fl:=false;
+     except
+       Application.ProcessMessages;
+     end;
+   end;
+
+   s:=AnsiUpperCase(tmpdoc.body.innerHTML);
+   p1:=pos(AnsiUpperCase('</body>'),s);
+   while (p1=0) and WebLoad do
+   begin
+     Application.ProcessMessages;
+     tmpdoc:=IHTMLDocument2(WebBrowser.Document);
+     fl:=true;
+     while fl and WebLoad do
+     begin
+       try
+         s:=AnsiUpperCase(tmpdoc.body.outerHTML);
+         fl:=false;
+       except
+         Application.ProcessMessages;
+       end;
+     end;
+     p1:=pos(AnsiUpperCase('</body>'),s);
+   end;
+
+   p1:=pos(AnsiUpperCase('<td id="tableProps" valign="top" align="left"><img id="pagerrorImg" SRC="res://shdoclc.dll/pagerror.gif"'),s);
+   test_URL:=tmpdoc.url;
+   //поотрезать от обоих http:// && www.
+   p0:=pos('://',test_URL);
+   if p0>0 then test_URL:=copy(test_URL,p0+3,Length(test_URL));
+   p0:=pos('WWW.',AnsiUpperCase(test_URL));
+   if p0>0 then test_URL:=copy(test_URL,p0+4,Length(test_URL));
+   p0:=pos('://',action);
+   if p0>0 then action:=copy(action,p0+3,Length(action));
+   p0:=pos('WWW.',AnsiUpperCase(action));
+   if p0>0 then action:=copy(action,p0+4,Length(action));
+
+   if (test_URL[Length(test_URL)]='\') or
+      (test_URL[Length(test_URL)]='/') then
+   begin
+      test_URL[Length(test_URL)]:=' ';
+      test_URL:=Trim(test_URL);
+   end;
+   if (action[Length(action)]='\') or
+      (action[Length(action)]='/') then
+   begin
+      action[Length(action)]:=' ';
+      action:=Trim(action);
+   end;
+   //превратить %xy в запросах в символы
+   test_URL:=str_replace('%20',' ', test_URL);
+   test_URL:=str_replace('\','/',test_URL);
+   action  :=str_replace('\','/',action);
+   //BackPercentToChar(action);
+   if ((AnsiUpperCase(test_URL) = AnsiUpperCase(action)) and
+       (p1=0)) or
+      (ng=0) then
+   begin
+     if ng>0 then ress:=true;
+     goodload:=true;
+     Application.ProcessMessages;
+   end
+   else
+   begin
+     goodload:=false;
+     ress:=false;
+     ng:=ng-1;
+   end;
+end;
+Result:=ress;
+end;
+
 
 end.

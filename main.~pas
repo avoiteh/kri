@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, Menus, ExtCtrls, ShellCtrls, SynEditHighlighter,
-  SynHighlighterPHP, SynEdit, OleCtrls, SHDocVw, Grids, ValEdit;
+  SynHighlighterPHP, SynEdit, OleCtrls, SHDocVw, Grids, ValEdit,
+  PHPCustomLibrary, phpLibrary, PHPCommon, php4delphi, phpFunctions, MSHTML;
 
 type
   TFormMain = class(TForm)
@@ -29,6 +30,11 @@ type
     Splitter2: TSplitter;
     WebBrowserRun: TWebBrowser;
     WebBrowserReport: TWebBrowser;
+    psvPHP1: TpsvPHP;
+    PHPLibrary1: TPHPLibrary;
+    Run1: TMenuItem;
+    PHPEngine1: TPHPEngine;
+    PHPSystemLibrary1: TPHPSystemLibrary;
     procedure FormActivate(Sender: TObject);
     procedure ShellTreeViewScriptsDblClick(Sender: TObject);
     procedure N5Click(Sender: TObject);
@@ -36,6 +42,10 @@ type
     procedure N3Click(Sender: TObject);
     procedure N4Click(Sender: TObject);
     procedure N2Click(Sender: TObject);
+    procedure PHPLibrary1Functions0Execute(Sender: TObject;
+      Parameters: TFunctionParams; var ReturnValue: Variant;
+      ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+    procedure Run1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -46,6 +56,7 @@ type
     function  addScriptTab(filename:string):integer;
     procedure closeScriptTab(number:integer);
     function  DeleteDir(Dir: string): boolean;
+
   end;
 
 var
@@ -60,6 +71,9 @@ begin
 RootDir:= ExtractFilePath(ParamStr(0));
 ShellTreeViewScripts.Root:=RootDir+'script';
 //ShellTreeViewScripts.Refresh(ShellTreeViewScripts.Selected.Parent);
+//PHPEngine1.DLLFolder:=RootDir;//+'PHP\extention\';
+//PHPEngine1.IniPath:=RootDir;//+'PHP\';
+PHPEngine.StartupEngine;
 end;
 
 procedure TFormMain.ShellTreeViewScriptsDblClick(Sender: TObject);
@@ -152,7 +166,10 @@ var
   Path:string;
   tf:TextFile;
 begin
-Path:=ShellTreeViewScripts.Path + '\'+ InputBox('Создать новый файл', 'Введите название:', '.php');
+Path:=ShellTreeViewScripts.Path;
+if not DirectoryExists(Path) then
+  Path:=ExtractFileDir(Path);
+Path:=Path + '\'+ InputBox('Создать новый файл', 'Введите название:', '.php');
 if FileExists(Path) then
   ShowMessage('Файл "'+Path+'" уже есть!')
 else
@@ -203,6 +220,7 @@ ChDir('..');
 RmDir(Dir);
 result := IOResult = 0;
 end;
+
 procedure TFormMain.N2Click(Sender: TObject);
 begin
 if MessageDlg('Удалить "'+ShellTreeViewScripts.Path+'"?', mtConfirmation, mbYesNoCancel, 0) = idYes then
@@ -211,6 +229,30 @@ if MessageDlg('Удалить "'+ShellTreeViewScripts.Path+'"?', mtConfirmation, mbYesN
   else if FileExists(ShellTreeViewScripts.Path) then
     DeleteFile(ShellTreeViewScripts.Path);
 ShellTreeViewScripts.Refresh(ShellTreeViewScripts.Selected.Parent);
+end;
+
+procedure TFormMain.PHPLibrary1Functions0Execute(Sender: TObject;
+  Parameters: TFunctionParams; var ReturnValue: Variant;
+  ZendVar: TZendVariable; TSRMLS_DC: Pointer);
+var
+  s:string;
+begin
+PageControl.ActivePageIndex:=0;
+Application.ProcessMessages;
+s:=Parameters[0].Value;
+
+end;
+
+procedure TFormMain.Run1Click(Sender: TObject);
+var
+  s:string;
+  Document: IHtmlDocument2;
+begin
+s:=psvPHP1.Execute(scriptTab[PageControlScripts.ActivePageIndex].Caption);
+PageControl.ActivePageIndex:=1;
+Application.ProcessMessages;
+WebBrowserRun.Navigate('about:'+s);
+//ShowMessage(s);
 end;
 
 end.

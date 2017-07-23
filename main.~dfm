@@ -124,6 +124,10 @@ object FormMain: TFormMain
       ShortCut = 16467
       OnClick = N6Click
     end
+    object Run1: TMenuItem
+      Caption = 'Run'
+      OnClick = Run1Click
+    end
   end
   object PopupMenuTreeScripts: TPopupMenu
     Left = 276
@@ -153,7 +157,38 @@ object FormMain: TFormMain
     NumberAttri.Foreground = clGreen
     StringAttri.Foreground = clNavy
     VariableAttri.Foreground = clFuchsia
-    Left = 417
+    Left = 273
+    Top = 112
+  end
+  object psvPHP1: TpsvPHP
+    Variables = <>
+    Left = 348
+    Top = 64
+  end
+  object PHPLibrary1: TPHPLibrary
+    Functions = <
+      item
+        FunctionName = 'wget'
+        Tag = 0
+        Parameters = <
+          item
+            Name = 'URL'
+            ParamType = tpString
+          end>
+        OnExecute = PHPLibrary1Functions0Execute
+      end>
+    Left = 388
+    Top = 64
+  end
+  object PHPEngine1: TPHPEngine
+    RegisterGlobals = False
+    Constants = <>
+    ReportDLLError = False
+    Left = 348
+    Top = 104
+  end
+  object PHPSystemLibrary1: TPHPSystemLibrary
+    Left = 388
     Top = 104
   end
 end

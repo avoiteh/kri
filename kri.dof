@@ -94,7 +94,7 @@ OutputDir=
 UnitOutputDir=
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=C:\user\市覾SynEdit-master\Source
+SearchPath=C:\user\市覾SynEdit-master\Source;C:\user\kri\php4delphi
 Packages=vcl;rtl;vclx;indy;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;soaprtl;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;teeui;teedb;tee;dss;visualclx;visualdbclx;vclactnband;vclshlctrls;Rave50CLX;Rave50VCL;dclOfficeXP;BComPortD7;DCEF_D7;SynEdit_R6
 Conditionals=
 DebugSourceDirs=
@@ -138,5 +138,6 @@ Comments=
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=1
-Item0=C:\user\市覾SynEdit-master\Source
+Count=2
+Item0=C:\user\市覾SynEdit-master\Source;C:\user\kri\php4delphi
+Item1=C:\user\市覾SynEdit-master\Source
