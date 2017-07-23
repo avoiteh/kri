@@ -52,11 +52,13 @@ type
     RootDir:string;
     scriptTab:array of TTabSheet;
     scriptSynEd:array of TSynEdit;
+    WebLoad, GloLoadingFlag:boolean;
     { Public declarations }
     function  addScriptTab(filename:string):integer;
     procedure closeScriptTab(number:integer);
     function  DeleteDir(Dir: string): boolean;
-
+    function  LoadPage(action:string):boolean;
+    function  str_replace(subst, deststr, mainstr:string):string;
   end;
 
 var
@@ -240,7 +242,7 @@ begin
 PageControl.ActivePageIndex:=0;
 Application.ProcessMessages;
 s:=Parameters[0].Value;
-
+ReturnValue:=LoadPage(s);
 end;
 
 procedure TFormMain.Run1Click(Sender: TObject);
@@ -255,4 +257,136 @@ WebBrowserRun.Navigate('about:'+s);
 //ShowMessage(s);
 end;
 
+function  TFormMain.LoadPage(action:string):boolean;
+var
+  tmpdoc: IHTMLDocument2;
+  s, test_URL:string;
+  k,p1,ng,p0,TimeOut:integer;
+  fl,goodload, ress:boolean;
+  tt, oneSec:real;
+begin
+WebLoad:=true;
+goodload:=false;
+ng:=1;
+TimeOut:=3;
+GloLoadingFlag:=false;
+oneSec:=1/24/60/60;
+//начинаем грузить страницу
+while (not goodload) and WebLoad do
+begin
+   //MessageBox(0,PChar(action),'',MB_OK);
+   GloLoadingFlag:=true;
+   WebBrowserRun.Silent:=true;
+   WebBrowserRun.Navigate(action);
+   fl:=true;
+   //таймер задержки
+   tt:=Time;
+   Application.ProcessMessages;
+   while (tt+TimeOut*oneSec>Time) and WebLoad do
+   begin
+     Sleep(100);
+     Application.ProcessMessages;
+   end;
+   //предельное время ожидания загрузки страницы - 30 секунд
+   //если за это время не удалось произвести загрузку, то прерываем процесс
+   Cursor:=crHourGlass;
+   while WebBrowserRun.Busy and (tt+30*oneSec>Time) and WebLoad do
+     Application.ProcessMessages;
+   Cursor:=crDefault;
+
+   tmpdoc:=IHTMLDocument2(WebBrowserRun.Document);
+
+   while fl and WebLoad do
+   begin
+     try
+       s:=AnsiUpperCase(tmpdoc.body.outerHTML);
+       fl:=false;
+     except
+       Application.ProcessMessages;
+     end;
+   end;
+
+   s:=AnsiUpperCase(tmpdoc.body.innerHTML);
+   p1:=pos(AnsiUpperCase('</body>'),s);
+   while (p1=0) and WebLoad do
+   begin
+     Application.ProcessMessages;
+     tmpdoc:=IHTMLDocument2(WebBrowserRun.Document);
+     fl:=true;
+     while fl and WebLoad do
+     begin
+       try
+         s:=AnsiUpperCase(tmpdoc.body.outerHTML);
+         fl:=false;
+       except
+         Application.ProcessMessages;
+       end;
+     end;
+     p1:=pos(AnsiUpperCase('</body>'),s);
+   end;
+
+   p1:=pos(AnsiUpperCase('<td id="tableProps" valign="top" align="left"><img id="pagerrorImg" SRC="res://shdoclc.dll/pagerror.gif"'),s);
+   test_URL:=tmpdoc.url;
+   //поотрезать от обоих http:// && www.
+   p0:=pos('://',test_URL);
+   if p0>0 then test_URL:=copy(test_URL,p0+3,Length(test_URL));
+   p0:=pos('WWW.',AnsiUpperCase(test_URL));
+   if p0>0 then test_URL:=copy(test_URL,p0+4,Length(test_URL));
+   p0:=pos('://',action);
+   if p0>0 then action:=copy(action,p0+3,Length(action));
+   p0:=pos('WWW.',AnsiUpperCase(action));
+   if p0>0 then action:=copy(action,p0+4,Length(action));
+
+   if (test_URL[Length(test_URL)]='\') or
+      (test_URL[Length(test_URL)]='/') then
+   begin
+      test_URL[Length(test_URL)]:=' ';
+      test_URL:=Trim(test_URL);
+   end;
+   if (action[Length(action)]='\') or
+      (action[Length(action)]='/') then
+   begin
+      action[Length(action)]:=' ';
+      action:=Trim(action);
+   end;
+   //превратить %xy в запросах в символы
+   test_URL:=str_replace('%20',' ', test_URL);
+   test_URL:=str_replace('\','/',test_URL);
+   action  :=str_replace('\','/',action);
+   //BackPercentToChar(action);
+   if ((AnsiUpperCase(test_URL) = AnsiUpperCase(action)) and
+       (p1=0)) or
+      (ng=0) then
+   begin
+     if ng>0 then ress:=true;
+     goodload:=true;
+     Application.ProcessMessages;
+   end
+   else
+   begin
+     goodload:=false;
+     ress:=false;
+     ng:=ng-1;
+   end;
+end;
+Result:=ress;
+end;
+
+function TFormMain.str_replace(subst, deststr, mainstr:string):string;
+var
+  s,rs:string;
+  p0,p1:integer;
+begin
+s:=mainstr;
+rs:='';
+p1:=length(subst);
+while pos(subst, s)>0 do
+begin
+  p0:=pos(subst, s);
+  rs:=rs+copy(s,1,p0-1)+deststr;
+  s:=copy(s,p0+p1,length(s));
+end;
+rs:=rs+s;
+Result:=rs;
+end;
 end.

@@ -52,11 +52,13 @@ type
     RootDir:string;
     scriptTab:array of TTabSheet;
     scriptSynEd:array of TSynEdit;
+    WebLoad, GloLoadingFlag:boolean;
     { Public declarations }
     function  addScriptTab(filename:string):integer;
     procedure closeScriptTab(number:integer);
     function  DeleteDir(Dir: string): boolean;
     function  LoadPage(action:string):boolean;
+    function  str_replace(subst, deststr, mainstr:string):string;
   end;
 
 var
@@ -237,10 +239,10 @@ procedure TFormMain.PHPLibrary1Functions0Execute(Sender: TObject;
 var
   s:string;
 begin
-PageControl.ActivePageIndex:=0;
+PageControl.ActivePageIndex:=1;
 Application.ProcessMessages;
 s:=Parameters[0].Value;
-
+ReturnValue:=LoadPage(s);
 end;
 
 procedure TFormMain.Run1Click(Sender: TObject);
@@ -249,9 +251,9 @@ var
   Document: IHtmlDocument2;
 begin
 s:=psvPHP1.Execute(scriptTab[PageControlScripts.ActivePageIndex].Caption);
-PageControl.ActivePageIndex:=1;
+PageControl.ActivePageIndex:=2;
 Application.ProcessMessages;
-WebBrowserRun.Navigate('about:'+s);
+WebBrowserReport.Navigate('about:'+s);
 //ShowMessage(s);
 end;
 
@@ -259,35 +261,28 @@ function  TFormMain.LoadPage(action:string):boolean;
 var
   tmpdoc: IHTMLDocument2;
   s, test_URL:string;
-  k,p1,ng,p0:integer;
+  k,p1,ng,p0,TimeOut:integer;
   fl,goodload, ress:boolean;
   tt, oneSec:real;
 begin
 WebLoad:=true;
 goodload:=false;
 ng:=1;
+TimeOut:=3;
 GloLoadingFlag:=false;
-if PageControlWebs.Pages[0]<>nil then
-  PageControlWebs.Pages[0].Caption:=action;
-Application.ProcessMessages;
 oneSec:=1/24/60/60;
 //начинаем грузить страницу
 while (not goodload) and WebLoad do
 begin
    //MessageBox(0,PChar(action),'',MB_OK);
    GloLoadingFlag:=true;
-   WebBrowser.Silent:=true;
-   WebBrowser.Navigate(action);
+   WebBrowserRun.Silent:=true;
+   WebBrowserRun.Navigate(action);
    fl:=true;
    //таймер задержки
    tt:=Time;
-   k:=0;
-   if myProject.EnableYandex then k:=k+1;
-   if myProject.EnableRambler then k:=k+1;
-   if myProject.EnableGoogle then k:=k+1;
-   if k=0 then k:=1;
    Application.ProcessMessages;
-   while (tt+myProject.TimeOut/k*oneSec>Time) and WebLoad do
+   while (tt+TimeOut*oneSec>Time) and WebLoad do
    begin
      Sleep(100);
      Application.ProcessMessages;
@@ -295,11 +290,11 @@ begin
    //предельное время ожидания загрузки страницы - 30 секунд
    //если за это время не удалось произвести загрузку, то прерываем процесс
    Cursor:=crHourGlass;
-   while WebBrowser.Busy and (tt+30*oneSec>Time) and WebLoad do
+   while WebBrowserRun.Busy and (tt+30*oneSec>Time) and WebLoad do
      Application.ProcessMessages;
    Cursor:=crDefault;
 
-   tmpdoc:=IHTMLDocument2(WebBrowser.Document);
+   tmpdoc:=IHTMLDocument2(WebBrowserRun.Document);
 
    while fl and WebLoad do
    begin
@@ -316,7 +311,7 @@ begin
    while (p1=0) and WebLoad do
    begin
      Application.ProcessMessages;
-     tmpdoc:=IHTMLDocument2(WebBrowser.Document);
+     tmpdoc:=IHTMLDocument2(WebBrowserRun.Document);
      fl:=true;
      while fl and WebLoad do
      begin
@@ -377,5 +372,21 @@ end;
 Result:=ress;
 end;
 
-
+function TFormMain.str_replace(subst, deststr, mainstr:string):string;
+var
+  s,rs:string;
+  p0,p1:integer;
+begin
+s:=mainstr;
+rs:='';
+p1:=length(subst);
+while pos(subst, s)>0 do
+begin
+  p0:=pos(subst, s);
+  rs:=rs+copy(s,1,p0-1)+deststr;
+  s:=copy(s,p0+p1,length(s));
+end;
+rs:=rs+s;
+Result:=rs;
+end;
 end.
